@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <title>OLX Crawler</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Staatliches&display=swap");
+      body {
+        font-family: "Staatliches", cursive;
+      }
+      .categorie {
+        font-size: 50px;
+        background-color: gray;
+        text-align: center;
+        padding-left: 5%;
+        padding-right: 5%;
+        border: 1px solid black;
+      }
+      .subcategorie {
+        font-size: 40px;
+        text-align: center;
+        padding-left: 5%;
+        padding-right: 5%;
+      }
+      .nr {
+        font-size: 30px;
+        text-align: center;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div class="categorie">
+        {% for cathegory in filters %}
+      {{ cathegory }}
+      <table class="tabel">
+        {% for subcathegory in filters[cathegory] %}
+        <tr><th class="subcategorie">{{ subcathegory }} </th></tr>
+
+        <tr><td class="nr">{{ filters[cathegory][subcathegory] }}</td></tr>
+
+        {% endfor %}
+        </table>
+      {% endfor %}
+    </div>
+  </body>
+</html>
