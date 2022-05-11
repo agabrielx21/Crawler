@@ -305,12 +305,14 @@ filters["Accesorii telefoane"]["Cabluri"] = cablu
 
 filters["Curier"]["Acceptat"] = curier
 
-print(filters)
-
 app = Flask(__name__)
 @app.route("/")
 def home():
-  return render_template('index.html', filters = filters)
+  return render_template('index1.html')
+
+@app.route('/filters/')
+def main():
+    return render_template('index.html', filters=filters)
 
 if __name__ == "__main__":
   app.run()
