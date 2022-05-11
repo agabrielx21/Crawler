@@ -50,32 +50,23 @@ generateLinks()
 with concurrent.futures.ThreadPoolExecutor() as executor:
     with open("op1.txt", "w", encoding="utf-8", errors="ignore") as f:
         list = executor.map(extract, links)
-        i=1
         for tuple in list:
-            f.write(str(i) + '\n')
             xz = 0
             if tuple:
                 for item in tuple:
                     f.write(a[xz] + '\n')
                     f.write(item + '\n')
-                    i += 1
                     xz += 1
 
-# print("--- %s seconds ---" % (time.time() - start_time))
+print("--- %s seconds ---" % (time.time() - start_time))
 from flask import Flask, render_template
 import re
-cnt = 0
-flagOras = 0
+flagOras, flagH, flagCuloare, flagRig, flagF, flagC, flagCp = 0, 0, 0, 0, 0, 0, 0
 apple, lenovo, samsung, asus, sony, huawei, xiaomi, dell, test = 0, 0, 0, 0, 0, 0, 0, 0, 0
-
-nou, utilizat = 0, 0
-
-lei, euro = 0, 0
-
+nou, utilizat, cnt, husa, folie, cablu, lei, euro, curier, rig = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 telefon, televizor, laptop, pc, tableta, casti, consola = 0, 0, 0, 0, 0, 0, 0
-
-bucuresti, cluj, timisoara, iasi, galati, constanta = 0, 0, 0, 0, 0, 0
-
+bucuresti, cluj, timisoara, iasi, galati, constanta, alto = 0, 0, 0, 0, 0, 0, 0
+rosu, alb, negru, gri, albastru, altac = 0, 0, 0, 0, 0, 0
 preturi = []
 
 filters = {
@@ -110,9 +101,7 @@ filters = {
     "Preț": {
         "0-100" : [],
         "101-500": [],
-        "501-1000": [],
-        "1001-5000": [],
-        "5001+": []
+        "501-1000": []
     },
     "Oraș": {
         "București" : [],
@@ -121,22 +110,40 @@ filters = {
         "Iași": [],
         "Galați": [],
         "Constanța": [],
-        "Alte orase": []
+        "Alt oraș": []
+    },
+    "Culoare": {
+        "Roșu" : [],
+        "Negru" : [],
+        "Albastru" : [],
+        "Alb" : [],
+        "Gri" : [],
+        "Altă culoare" : []
+    },
+    "Rig": {
+        "Număr" : []
+    },
+    "Accesorii telefoane": {
+        "Huse" : [],
+        "Folii" : [],
+        "Cabluri" : []
+    },
+    "Curier" : {
+        "Acceptat" : []
     }
 
 }
 
 with open("op1.txt", "r", encoding="utf-8") as f:
     for linie in f:
-        flagOras = 0
+        if linie == "DESCRIERE" + "\n":
+            flagOras, flagRig, flagCp, flagF, flagH, flagCuloare = 0, 0, 0, 0, 0, 0
         line = linie.lower()
         #Filtru 1 stare
         if re.match("Stare: Nou",linie):
             nou += 1
-            filters["Stare"]["Nou"] = [nou]
         if re.match("Stare: Utilizat",linie):
             utilizat += 1
-            filters["Stare"]["Utilizat"] = [utilizat]
         #Filtru 2,3 preturi
         if linie == "PRET" + "\n":
             cnt += 1
@@ -144,10 +151,8 @@ with open("op1.txt", "r", encoding="utf-8") as f:
             matches = re.finditer("\d+(?=\s*lei)", line)
             if re.match("\d*\s€",line):
                 euro += 1
-                filters["Moneda"]["Euro"] = euro
             else:
                 lei += 1
-                filters["Moneda"]["Lei"] = lei
             for match in matches:
                 preturi.append(match.group())
         #Filtru 4
@@ -155,53 +160,38 @@ with open("op1.txt", "r", encoding="utf-8") as f:
             line = f.readline().lower()
             if re.search("sa(m|n)su(m|n)g*",line):
                 samsung += 1
-                filters["Marca"]["Samsung"] = [samsung]
             if re.search("ap*le",line):
                 apple += 1
-                filters["Marca"]["Apple"] = [apple]
             if re.search("a*iphone",line):
                 apple += 1
-                filters["Marca"]["Apple"] = [apple]
             if re.search("lenovo",line):
                 lenovo += 1
-                filters["Marca"]["Lenovo"] = [lenovo]
             if re.search("asus",line):
                 asus += 1
-                filters["Marca"]["Asus"] = [asus]
             if re.search("son(y|i)",line):
                 sony += 1
-                filters["Marca"]["Sony"] = [sony]
             if re.search("hu*a(w|u)ei",line):
                 huawei += 1
-                filters["Marca"]["Huawei"] = [huawei]
             if re.search("xia*omi",line):
                 xiaomi += 1
-                filters["Marca"]["Xiaomi"] = [xiaomi]
             if re.search("dell",line):
                 dell += 1
-                filters["Marca"]["Dell"] = [dell]
+                filters["Marca"]["Dell"] = dell
             #Filtru 5
             if re.search("tablet(a|e|ă)",line):
                 tableta += 1
-                filters["Tip device"]["Tabletă"] = [tableta]
             if re.search("telefo(n|ane)",line):
                 telefon += 1
-                filters["Tip device"]["Telefon"] = [telefon]
             if re.search("l(a|e)pt(a|o)p",line):
                 laptop += 1
-                filters["Tip device"]["Laptop"] = [laptop]
             if re.search("(tv|televizo(are|r))",line):
                 televizor += 1
-                filters["Tip device"]["Televizor"] = [televizor]
             if re.search("(pc|calculator|computer)", line):
                 pc += 1
-                filters["Tip device"]["PC"] = [pc]
             if re.search("c(a|ă)(s|ș)ti", line):
                 casti += 1
-                filters["Tip device"]["Căști"] = [casti]
             if re.search("con*sol(a|ă)", line):
                 consola += 1
-                filters["Tip device"]["Consolă"] = [consola]
             #Filtru 6 ORAS
         if re.search("bucure(s|ș)ti", line) and flagOras == 0:
             bucuresti +=1
@@ -221,17 +211,42 @@ with open("op1.txt", "r", encoding="utf-8") as f:
         if re.search("constan(t|ț)a", line) and flagOras == 0:
             constanta += 1
             flagOras = 1
+        #Filtru 7 CULOARE
+        if re.search("alb(a|ă)*",line) and flagCuloare == 0:
+            flagCuloare = 1
+            alb += 1
+        if re.search("neagr(ă|a)",line) or re.search("negru",line) and flagCuloare == 0:
+            negru += 1
+            flagCuloare = 1
+        if re.search("ro(s|ș)u",line) or re.search("ro(s|ș)ie",line) and flagCuloare == 0:
+            rosu += 1
+            flagCuloare = 1
+        if re.search("albastru",line) or re.search("albastr(ă|a)",line) and flagCuloare == 0:
+            albastru += 1
+            flagCuloare = 1
+        if re.search("gri",line) and flagCuloare == 0:
+            gri += 1
+            flagCuloare = 1
+        #Filtru 8
+        if re.search("rig\s",line) and flagRig == 0:
+            rig += 1
+            flagRig = 1
+        #Filtru 9
+        if re.search("hus(a|e|ă)\stelefoa*ne*",line) and flagH == 0:
+            husa += 1
+            flagH = 1
+        if re.search("foli(e|i)\sprotectie",line) and flagF == 0:
+            folie += 1
+            flagF = 1
+        if re.search("cablu",line) and flagC == 0:
+            cablu += 1
+            flagC = 1
+        #Filtru 10
+        if re.search("curier",line) and flagCp == 0:
+            curier += 1
+            flagCp = 1
 
-
-filters["Oraș"]["București"] = [bucuresti]
-filters["Oraș"]["Cluj-Napoca"] = [cluj]
-filters["Oraș"]["Timișoara"] = [timisoara]
-filters["Oraș"]["Iași"] = [iasi]
-filters["Oraș"]["Galați"] = [galati]
-filters["Oraș"]["Constanța"] = [constanta]
-
-
-counter1, counter2, counter3, counter4, counter5 = 0, 0, 0, 0, 0
+counter1, counter2, counter3 = 0, 0, 0
 #Filtru3
 for item in preturi:
     if int(item) < 101:
@@ -240,18 +255,57 @@ for item in preturi:
         counter2 += 1
     elif int(item) < 1001:
         counter3 += 1
-    elif int(item) < 5001:
-        counter4 += 1
-    else:
-        counter5 +=1
 
-    filters["Preț"]["0-100"] = [counter1]
-    filters["Preț"]["101-500"] = [counter2]
-    filters["Preț"]["501-1000"] = [counter3]
-    filters["Preț"]["1001-5000"] = [counter4]
-    filters["Preț"]["5001+"] = [counter5]
+filters["Stare"]["Nou"] = nou
+filters["Stare"]["Utilizat"] = utilizat
 
-print(filters["Oraș"])
+filters["Moneda"]["Euro"] = euro
+filters["Moneda"]["Lei"] = lei
+
+filters["Marca"]["Samsung"] = samsung
+filters["Marca"]["Apple"] = apple
+filters["Marca"]["Lenovo"] = lenovo
+filters["Marca"]["Asus"] = asus
+filters["Marca"]["Sony"] = sony
+filters["Marca"]["Huawei"] = huawei
+filters["Marca"]["Xiaomi"] = xiaomi
+
+filters["Tip device"]["Tabletă"] = tableta
+filters["Tip device"]["Telefon"] = telefon
+filters["Tip device"]["Laptop"] = laptop
+filters["Tip device"]["Televizor"] = televizor
+filters["Tip device"]["PC"] = pc
+filters["Tip device"]["Căști"] = casti
+filters["Tip device"]["Consolă"] = consola
+
+filters["Oraș"]["București"] = bucuresti
+filters["Oraș"]["Cluj-Napoca"] = cluj
+filters["Oraș"]["Timișoara"] = timisoara
+filters["Oraș"]["Iași"] = iasi
+filters["Oraș"]["Galați"] = galati
+filters["Oraș"]["Constanța"] = constanta
+filters["Oraș"]["Alt oraș"] = cnt-bucuresti-cluj-timisoara-iasi-galati-constanta
+
+filters["Preț"]["0-100"] = counter1
+filters["Preț"]["101-500"] = counter2
+filters["Preț"]["501-1000"] = counter3
+
+filters["Culoare"]["Roșu"] = rosu
+filters["Culoare"]["Alb"] = alb
+filters["Culoare"]["Negru"] = negru
+filters["Culoare"]["Gri"] = gri
+filters["Culoare"]["Albastru"] = albastru
+filters["Culoare"]["Altă culoare"] = cnt-rosu-alb-negru-gri-albastru
+
+filters["Rig"]["Număr"] = rig
+
+filters["Accesorii telefoane"]["Folii"] = folie
+filters["Accesorii telefoane"]["Huse"] = husa
+filters["Accesorii telefoane"]["Cabluri"] = cablu
+
+filters["Curier"]["Acceptat"] = curier
+
+print(filters)
 
 app = Flask(__name__)
 @app.route("/")
